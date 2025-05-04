@@ -14,6 +14,13 @@ local respawnCFrame = CFrame.new(
     -0.448940247, -0.00957425963, -0.893510461
 )
 
+local fastTargetCFrame = CFrame.new(
+    -567.148987, 1122.45911, 1118.74243,
+    0.962349713, 0.0417084582, -0.268595278,
+    -1.00914612e-07, 0.988157272, 0.15344432,
+    0.271814317, -0.14766708, 0.950952888
+)
+
 -- Anti-idle
 player.Idled:Connect(function()
     VirtualUser:CaptureController()
@@ -25,27 +32,26 @@ local function tweenToPosition()
     local character = player.Character or player.CharacterAdded:Wait()
     local hrp = character:WaitForChild("HumanoidRootPart")
 
-    -- Instant tween to initial position
+    -- Instant tween to main CFrame
     local instantTween = TweenService:Create(hrp, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {
         CFrame = respawnCFrame
     })
     instantTween:Play()
     instantTween.Completed:Wait()
 
-    -- Tween 40 studs backward
-    local backCFrame = respawnCFrame * CFrame.new(0, 0, -40)
-    local backTween = TweenService:Create(hrp, TweenInfo.new(1, Enum.EasingStyle.Sine), {
-        CFrame = backCFrame
+    -- Fast tween to secondary position in the air
+    local fastTween = TweenService:Create(hrp, TweenInfo.new(0.3, Enum.EasingStyle.Sine), {
+        CFrame = fastTargetCFrame
     })
-    backTween:Play()
-    backTween.Completed:Wait()
+    fastTween:Play()
+    fastTween.Completed:Wait()
 
-    -- Tween forward to original
-    local forwardTween = TweenService:Create(hrp, TweenInfo.new(1, Enum.EasingStyle.Sine), {
+    -- Slow tween back to main CFrame
+    local slowTween = TweenService:Create(hrp, TweenInfo.new(2.5, Enum.EasingStyle.Sine), {
         CFrame = respawnCFrame
     })
-    forwardTween:Play()
-    forwardTween.Completed:Wait()
+    slowTween:Play()
+    slowTween.Completed:Wait()
 
     -- Equip Psychic
     local tool = player.Backpack:FindFirstChild("Psychic")
