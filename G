@@ -1,40 +1,50 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local VirtualUser = game:GetService("VirtualUser")
 
 local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local hrp = character:WaitForChild("HumanoidRootPart")
-local respawnCFrame = CFrame.new(-444.333008, 1011.56787, 685.085754, -0.893259048, -0.0212173164, 0.449041277, -0.0232571326, 0.999729037, 0.000973013404, -0.448940247, -0.00957425963, -0.893510461)
 local targetPlaceId = 6284182556
 local remoteEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("ChangeDimension")
+local respawnCFrame = CFrame.new(
+    -444.333008, 1011.56787, 685.085754,
+    -0.893259048, -0.0212173164, 0.449041277,
+    -0.0232571326, 0.999729037, 0.000973013404,
+    -0.448940247, -0.00957425963, -0.893510461
+)
 
--- Tween function
+-- Anti-idle
+player.Idled:Connect(function()
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton2(Vector2.new())
+end)
+
+-- Tween + equip logic
 local function tweenToPosition()
-	local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Linear)
-	local goal = {CFrame = respawnCFrame}
-	local tween = TweenService:Create(hrp, tweenInfo, goal)
-	tween:Play()
-	tween.Completed:Wait()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hrp = character:WaitForChild("HumanoidRootPart")
 
-	-- Equip Psychic
-	local tool = player.Backpack:FindFirstChild("Psychic")
-	if tool then
-		tool.Parent = character
-	end
+    local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Linear)
+    local goal = {CFrame = respawnCFrame}
+    local tween = TweenService:Create(hrp, tweenInfo, goal)
+    tween:Play()
+    tween.Completed:Wait()
+
+    -- Equip Psychic
+    local tool = player.Backpack:FindFirstChild("Psychic")
+    if tool then
+        tool.Parent = character
+    end
 end
 
 -- Main logic
 if game.PlaceId ~= targetPlaceId then
-	remoteEvent:FireServer()
+    remoteEvent:FireServer()
 else
-	tweenToPosition()
+    tweenToPosition()
 
-	-- Respawn logic
-	player.CharacterAdded:Connect(function(char)
-		char:WaitForChild("HumanoidRootPart")
-		character = char
-		hrp = char:WaitForChild("HumanoidRootPart")
-		tweenToPosition()
-	end)
+    player.CharacterAdded:Connect(function()
+        task.wait(1) -- allow full load
+        tweenToPosition()
+    end)
 end
