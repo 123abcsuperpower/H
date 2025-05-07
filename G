@@ -70,3 +70,11 @@ else
         tweenToPosition()
     end)
 end
+
+while wait() do
+local args = {
+    [1] = "TripleMythicalChest"
+}
+
+game:GetService("ReplicatedStorage").Events.PurchaseItem:FireServer(unpack(args))
+end
